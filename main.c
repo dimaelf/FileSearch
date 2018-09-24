@@ -4,7 +4,7 @@
 
 int usage(int numargs){
     if (numargs == 1) {
-        printf("Usage: ./fileSearch <where_to_search> <what_to_searck> <log_file> <length_of_sequence>\n");
+        printf("Usage: ./fileSearch <where_to_search> <what_to_search> <log_file> <length_of_sequence>\n");
         return 0;
     }
     if (numargs == 5){
@@ -100,7 +100,7 @@ int main(int args, char* argv[]){
     *(SearchSeq+N) = '\0';
 
     printf("\r[                    ] 0/100");
-    fprintf(fLog, "Searching for %s in %s:\n", SearchSeq, argv[1]);
+    fprintf(fLog, "Searching for \"%s\" in %s:\n", SearchSeq, argv[1]);
     fseek(fSearch, 0L, SEEK_END);
     long sz = ftell(fSearch);
     fseek(fSearch,0, SEEK_SET);
