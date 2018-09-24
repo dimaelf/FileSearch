@@ -2,6 +2,18 @@
 #include <stdlib.h>
 
 
+int usage(int numargs){
+    if (numargs == 1) {
+        printf("Usage: ./fileSearch <where_to_search> <what_to_searck> <log_file> <length_of_sequence>\n");
+        return 0;
+    }
+    if (numargs == 5){
+        return 1;
+    }
+    printf("Incorrect amount of arguments arguments\n");
+    return 0;
+}
+
 int compare(char* c1, char* c2, long N){
     for(long i = 0; i<N; i++){
         if (*(c1+i)!=*(c2+i)){
@@ -33,7 +45,7 @@ int ShowProgress(long filesize, long part, long BlockCount){
 
 int PrintOffset(long BlockCount, int degree, long i, FILE* file){
     if (BlockCount == 0){
-        fprintf(file, "%li \n ", i);
+        fprintf(file, "%li \n", i);
         return 0;
     }
     char format[] = "%li%02li \n";
@@ -49,23 +61,22 @@ int main(int args, char* argv[]){
     for (int i = 0; i<DegreeOfPart; i++){part*=10;}
     long BlockCount = 0;
 
-    if (args != 5){
-        printf("Incorrect amount of arguments arguments\n");
+    if (!usage(args)){
         return 0;
     }
 
-    FILE *file1 = fopen(argv[1], "r");
-    if (file1 == 0){
+    FILE *fSearch = fopen(argv[1], "r");
+    if (fSearch == 0){
         printf("Error for reading the first file\n");
         return 0;
     }
-    FILE *file2 = fopen(argv[2], "r");
-    if (file2 == 0){
+    FILE *fTemplate = fopen(argv[2], "r");
+    if (fTemplate == 0){
         printf("Error for reading the second file\n");
         return 0;
     }
-    FILE *file3 = fopen(argv[3], "w");
-    if (file3 == 0){
+    FILE *fLog = fopen(argv[3], "w");
+    if (fLog == 0){
         printf("Error for reading the log file\n");
         return 0;
     }
@@ -76,36 +87,36 @@ int main(int args, char* argv[]){
     }
 
     char* SearchPlace = (char*)malloc(part+N);
-    int NumRead = fread(SearchPlace, 1, part+N, file1);
+    int NumRead = fread(SearchPlace, 1, part+N, fSearch);
     if (NumRead < N){
         printf("Too small first file\n");
         return 0;
     }
     char* SearchSeq = (char*)malloc(N+1);
-    if (fread(SearchSeq, 1, N, file2) < N){
+    if (fread(SearchSeq, 1, N, fTemplate) < N){
         printf("Too small second file\n");
         return 0;
     }
     *(SearchSeq+N) = '\0';
 
     printf("\r[                    ] 0/100");
-    fprintf(file3, "Searching for %s in %s:\n", SearchSeq, argv[1]);
-    fseek(file1, 0L, SEEK_END);
-    long sz = ftell(file1);
-    fseek(file1,0, SEEK_SET);
+    fprintf(fLog, "Searching for %s in %s:\n", SearchSeq, argv[1]);
+    fseek(fSearch, 0L, SEEK_END);
+    long sz = ftell(fSearch);
+    fseek(fSearch,0, SEEK_SET);
 
     do{
-        NumRead = fread(SearchPlace, 1, part+N, file1);
+        NumRead = fread(SearchPlace, 1, part+N, fSearch);
         ShowProgress(sz, part, BlockCount);
         for (long i = 0; i<NumRead-N; i++){
             if (compare(SearchPlace+i, SearchSeq, N) == 1){
-                PrintOffset(BlockCount, DegreeOfPart, i, file3);
+                PrintOffset(BlockCount, DegreeOfPart, i, fLog);
             }
         }
         BlockCount++;
-        fseek(file1, (-1)*N, SEEK_CUR);
+        fseek(fSearch, (-1)*N, SEEK_CUR);
     }while(NumRead == part+N);
 
-    printf("\r[####################] 100/100");
+    printf("\r[####################] 100/100\n");
     return 0;
 }
